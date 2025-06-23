@@ -1,5 +1,92 @@
 package search.com.search.repository;
 
+
+import java.util.List;
+
+import org.elasticsearch.index.query.QueryBuilders;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.Query;
+
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.stereotype.Repository;
+import org.apache.commons.lang.StringUtils;
+
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import search.com.search.model.consts.Consts;
+import search.com.search.model.dto.ResponseItems;
+import search.com.search.model.entities.Items;
+
+@Repository
+@RequiredArgsConstructor
+@Slf4j
 public class ItemsRepository {
+
+    @Value("${server.fullAddress}")
+    private String serverFullAddress;
     
+    private final String[] products = {"product","product._2gram", "product._3gram"};
+    private final InnerItemsRepository repo;
+    private final ElasticsearchOperations elasticClient;
+
+    @SneakyThrows
+    public ResponseItems findItems(
+        String category,
+        String manufacturer,
+        String product,
+        String page
+    ){
+        BoolQueryBuilder querySec = QueryBuilders.boolQuery();
+
+        if (!StringUtils.isEmpty(category)) {
+            querySec.must(QueryBuilders.termQuery(Consts.CATEGORY, category));
+        }
+
+        if (!StringUtils.isEmpty(manufacturer)) {
+            querySec.must(QueryBuilders.termQuery(Consts.MANUFACTURER, manufacturer));
+        }
+
+        if (!StringUtils.isEmpty(product)) {
+            querySec.must(QueryBuilders.multiMatchQuery(product, products).type(MultiMatchQueryBuilder.Type.BOOL_PREFIX));
+        }
+
+        if (!querySec.hasClauses()) {
+            querySec.must(QueryBuilders.matchAllQuery());
+        }
+
+        querySec.must(QueryBuilders.termQuery("visible", true));
+
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder().withQuery(querySec);
+
+        int pageInt = Integer.parseInt(page);
+        if (pageInt >= 0) {
+            queryBuilder.withPageable(PageRequest.of(pageInt, 10));
+        }
+
+        
+        SearchHits<Items> result = elasticClient.search(queryBuilder.build(), Items.class);
+
+        return new ResponseItems(result.getSearchHits().stream().map(SearchHit::getContent).toList());
+    }
+
+    public Items save(Items item) {
+        return this.repo.save(item);
+    }
+
+    public Items update(Items item) {
+        return this.repo.update(item);
+    }
+
+    public Boolean delete(Items item) {
+        this.delete(item);
+        return Boolean.TRUE;
+    }
 }

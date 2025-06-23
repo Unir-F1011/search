@@ -1,7 +1,6 @@
 package search.com.search.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
@@ -11,15 +10,14 @@ public interface InnerItemsRepository extends ElasticsearchRepository <Items, St
 
     List<Items> findByCategory(String category);
 
-    Optional<Items> findById(String itemId);
-
+    List<Items> findByManufacturer(String manufacuter);
+    
     Items save(Items item);
 
     void delete(Items item);
 
-    void update(Items item);
+    Items update(Items item);
 
     List<Items> findAll();
 
-    List<Items> findByManufacturer(String manufacuter);
 }
