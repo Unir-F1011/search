@@ -1,7 +1,6 @@
 package search.com.search.controller;
 
 import java.util.HashMap;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import search.com.search.model.dto.ItemsDto;
-import search.com.search.model.entities.Items;
 import search.com.search.service.InnerSearch;
+import search.com.search.model.dto.ResponseItems;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,37 +31,65 @@ public class SearchAPI {
 
 
     @PostMapping("/v1/items")
-    public ResponseEntity<Object> addItems(@RequestBody ItemsDto item) {
-
-        HashMap<String,String> response = new HashMap<String,String>();
-        response.put("message", "Item added successful!");
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    public ResponseEntity<Object> addItems(@RequestBody ItemsDto itemDto) {
+        try {
+            this.search.addItem(itemDto);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("message", "Item added successful!");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        }catch (IllegalArgumentException i) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    @DeleteMapping("/v1/items")
+    @DeleteMapping("/v1/items/{itemId}")
     public ResponseEntity<Object> deleteItems(@PathVariable String itemId) {
-
-        HashMap<String, String> response = new HashMap<String, String>();
-        response.put("message", "Item deleted successful!");
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+        try {
+            this.search.deleteItem(itemId);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("message", "Item deleted successful!");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        }catch (IllegalArgumentException i) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        
     }
     
-    @PatchMapping("/v1/items")
-    public ResponseEntity<Object> updateItems(@RequestBody ItemsDto item, @PathVariable String itemId) {
+    @PatchMapping("/v1/items{itemId}")
+    public ResponseEntity<Object> updateItems(@RequestBody ItemsDto itemDto, @PathVariable String itemId) {
+        try {
+            this.search.updateItem(itemDto, itemId);
+            HashMap<String, String> response = new HashMap<>();
+            response.put("message", "Item added successful!");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        }catch (IllegalArgumentException i) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
-        HashMap<String, String> response = new HashMap<String, String>();
-        response.put("message", "Item added successful!");
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+        
     }
 
     @GetMapping("/v1/items")
-    public ResponseEntity<Items> getItems(
+    public ResponseEntity<ResponseItems> getItems(
         @RequestParam(required = false) String category,
         @RequestParam(required = false) String manufacturer,
         @RequestParam(required = false) String product,
         @RequestParam(required = false, defaultValue = "0") String page
     ) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        try {
+            ResponseItems response = this.search.getItems(category, manufacturer, product, page);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (IllegalArgumentException i) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

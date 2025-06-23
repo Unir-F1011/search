@@ -1,6 +1,5 @@
 package search.com.search.model.entities;
 
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -13,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import search.com.search.model.consts.Consts;
+import search.com.search.model.dto.ItemsDto;
 
 @Document(indexName = "items", createIndex = true)
 @Getter
@@ -22,7 +22,7 @@ import search.com.search.model.consts.Consts;
 @Builder
 @ToString
 public class Items {
-    
+
     @Id
     private String id;
 
@@ -43,5 +43,14 @@ public class Items {
 
     @Field(type = FieldType.Double, name = Consts.TOTAL)
     private Integer total;
-    
+
+    public void update(ItemsDto item) {
+        this.id = item.getId();
+        this.category = item.getCategory();
+        this.color = item.getColor();
+        this.manufacturer = item.getManufacturer();
+        this.product = item.getProduct();
+        this.total = item.getTotal();
+        this.price = item.getPrice();
+    }
 }

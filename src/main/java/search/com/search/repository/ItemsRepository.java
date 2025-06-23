@@ -1,22 +1,15 @@
 package search.com.search.repository;
 
-
-import java.util.List;
-
-import org.elasticsearch.index.query.QueryBuilders;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.Query;
-
-
-import org.springframework.beans.factory.annotation.Value;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Repository;
-import org.apache.commons.lang.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -30,20 +23,17 @@ import search.com.search.model.entities.Items;
 @Slf4j
 public class ItemsRepository {
 
-    @Value("${server.fullAddress}")
-    private String serverFullAddress;
-    
-    private final String[] products = {"product","product._2gram", "product._3gram"};
+    private final String[] products = { "product", "product._2gram", "product._3gram" };
     private final InnerItemsRepository repo;
     private final ElasticsearchOperations elasticClient;
 
     @SneakyThrows
     public ResponseItems findItems(
-        String category,
-        String manufacturer,
-        String product,
-        String page
-    ){
+            String category,
+            String manufacturer,
+            String product,
+            String page) {
+
         BoolQueryBuilder querySec = QueryBuilders.boolQuery();
 
         if (!StringUtils.isEmpty(category)) {
@@ -55,7 +45,8 @@ public class ItemsRepository {
         }
 
         if (!StringUtils.isEmpty(product)) {
-            querySec.must(QueryBuilders.multiMatchQuery(product, products).type(MultiMatchQueryBuilder.Type.BOOL_PREFIX));
+            querySec.must(
+                    QueryBuilders.multiMatchQuery(product, products).type(MultiMatchQueryBuilder.Type.BOOL_PREFIX));
         }
 
         if (!querySec.hasClauses()) {
@@ -71,9 +62,7 @@ public class ItemsRepository {
             queryBuilder.withPageable(PageRequest.of(pageInt, 10));
         }
 
-        
         SearchHits<Items> result = elasticClient.search(queryBuilder.build(), Items.class);
-
         return new ResponseItems(result.getSearchHits().stream().map(SearchHit::getContent).toList());
     }
 

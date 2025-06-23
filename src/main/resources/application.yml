@@ -1,4 +1,4 @@
-sping:
+spring:
   application:
     name: ${SERVER_NAME}
 
