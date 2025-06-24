@@ -10,7 +10,7 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_URL}
   instance:
-    preferIpAddress: true
+    preferIpAddress: false
     hostname: ${SERVER_NAME}
 
 elasticsearch:
