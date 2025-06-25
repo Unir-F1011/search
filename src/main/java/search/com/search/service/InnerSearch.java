@@ -70,7 +70,7 @@ class Search implements InnerSearch {
                     .build();
 
             try {
-                this.repository.update(item);
+                this.repository.save(item);
 
             } catch (Exception e) {
                 throw new RuntimeException("Internal error");

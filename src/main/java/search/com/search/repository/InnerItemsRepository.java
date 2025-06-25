@@ -9,7 +9,4 @@ public interface InnerItemsRepository extends ElasticsearchRepository<Items, Str
     Items save(Items item);
 
     void delete(Items item);
-
-    Items update(Items item);
-
 }

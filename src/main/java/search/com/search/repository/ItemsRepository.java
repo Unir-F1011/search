@@ -27,6 +27,7 @@ public class ItemsRepository {
     private final InnerItemsRepository repo;
     private final ElasticsearchOperations elasticClient;
 
+
     @SneakyThrows
     public ResponseItems findItems(
             String category,
@@ -67,15 +68,15 @@ public class ItemsRepository {
     }
 
     public Items save(Items item) {
-        return this.repo.save(item);
+        return repo.save(item);
     }
 
     public Items update(Items item) {
-        return this.repo.update(item);
+        return repo.save(item);
     }
 
     public Boolean delete(Items item) {
-        this.delete(item);
+        repo.delete(item);
         return Boolean.TRUE;
     }
 }
