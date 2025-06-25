@@ -1,5 +1,7 @@
 package search.com.search.repository;
 
+import java.util.Optional;
+
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -78,5 +80,9 @@ public class ItemsRepository {
     public Boolean delete(Items item) {
         repo.delete(item);
         return Boolean.TRUE;
+    }
+    
+    public Optional<Items> findById(String id) {
+        return repo.findById(id);
     }
 }

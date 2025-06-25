@@ -1,5 +1,7 @@
 package search.com.search.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -64,12 +66,22 @@ class Search implements InnerSearch {
     @Override
     public void updateItem(ItemsDto itemDto, String itemId) {
         if (StringUtils.hasLength(itemId.trim()) && itemDto.getTotal() != null) {
-            Items item = Items.builder()
-                    .id(itemId.trim())
-                    .total(itemDto.getTotal())
-                    .build();
-
             try {
+                Optional<Items> itemCopy = this.repository.findById(itemId.trim());
+                if (itemCopy.isEmpty()) {
+                    throw new IllegalArgumentException("Bad request");
+                }
+                
+                Items item = Items.builder()
+                        .id(itemId.trim())
+                        .total(itemCopy.get().getTotal() - itemDto.getTotal())
+                        .price(itemCopy.get().getPrice())
+                        .category(itemCopy.get().getCategory())
+                        .color(itemCopy.get().getColor())
+                        .manufacturer(itemCopy.get().getManufacturer())
+                        .product(itemCopy.get().getProduct())
+                        .build();
+                
                 this.repository.save(item);
 
             } catch (Exception e) {

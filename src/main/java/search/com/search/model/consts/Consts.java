@@ -13,4 +13,5 @@ public class Consts {
     public static final String PRICE="price";
     public static final String MANUFACTURER="manufacturer";
     public static final String TOTAL="total";
+    public static final String ID="id";
 }

@@ -22,7 +22,7 @@ import search.com.search.model.consts.Consts;
 @ToString
 public class Items {
 
-    @Id
+    @Field(type = FieldType.Keyword, name = Consts.ID)
     private String id;
 
     @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT)
