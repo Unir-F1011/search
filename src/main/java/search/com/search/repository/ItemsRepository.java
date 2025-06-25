@@ -53,7 +53,7 @@ public class ItemsRepository {
             querySec.must(QueryBuilders.matchAllQuery());
         }
 
-        querySec.must(QueryBuilders.termQuery("visible", true));
+        //querySec.must(QueryBuilders.termQuery("visible", true));
 
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder().withQuery(querySec);
 

@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import search.com.search.model.consts.Consts;
-import search.com.search.model.dto.ItemsDto;
 
 @Document(indexName = "items", createIndex = true)
 @Getter
