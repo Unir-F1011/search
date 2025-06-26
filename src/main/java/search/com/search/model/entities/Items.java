@@ -23,6 +23,7 @@ import search.com.search.model.consts.Consts;
 public class Items {
 
     @Field(type = FieldType.Keyword, name = Consts.ID)
+    @Id
     private String id;
 
     @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT)
@@ -35,11 +36,11 @@ public class Items {
     private String category;
 
     @Field(type = FieldType.Double, name = Consts.PRICE)
-    private Integer price;
+    private Double price;
 
     @Field(type = FieldType.Keyword, name = Consts.MANUFACTURER)
     private String manufacturer;
 
     @Field(type = FieldType.Double, name = Consts.TOTAL)
-    private Integer total;
+    private Double total;
 }
