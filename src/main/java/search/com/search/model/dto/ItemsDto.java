@@ -20,6 +20,6 @@ public class ItemsDto {
     private String category;
     private Double price;
     private String manufacturer;
-    private Double total;
+    private Integer total;
 
 }

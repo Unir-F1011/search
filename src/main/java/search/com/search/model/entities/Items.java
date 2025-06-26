@@ -41,6 +41,6 @@ public class Items {
     @Field(type = FieldType.Keyword, name = Consts.MANUFACTURER)
     private String manufacturer;
 
-    @Field(type = FieldType.Double, name = Consts.TOTAL)
-    private Double total;
+    @Field(type = FieldType.Integer, name = Consts.TOTAL)
+    private Integer total;
 }
