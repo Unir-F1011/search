@@ -59,7 +59,7 @@ public class SearchAPI {
         
     }
     
-    @PatchMapping("/v1/items{itemId}")
+    @PatchMapping("/v1/items/{itemId}")
     public ResponseEntity<Object> updateItems(@RequestBody ItemsDto itemDto, @PathVariable String itemId) {
         try {
             this.search.updateItem(itemDto, itemId);
