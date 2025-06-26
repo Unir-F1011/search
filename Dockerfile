@@ -1,12 +1,12 @@
-# Etapa 1: Build con Maven y JDK 21
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+FROM maven:3.9.6-eclipse-temurin-24 AS build
 
 COPY . .
 
 RUN mvn clean package
 
-# Etapa 2: Imagen runtime con OpenJDK 21 JRE
-FROM openjdk:21
+
+FROM eclipse-temurin:24-jdk
 
 EXPOSE 8081
 
