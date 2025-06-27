@@ -25,7 +25,12 @@ import search.com.search.model.entities.Items;
 @Slf4j
 public class ItemsRepository {
 
-    private final String[] products = { "product", "product._2gram", "product._3gram" };
+    private final String[] products = new String[] {
+            Consts.PRODUCT,
+            Consts.PRODUCT + "._2gram",
+            Consts.PRODUCT + "._3gram",
+            Consts.PRODUCT + ".prefix"
+    };
     private final InnerItemsRepository repo;
     private final ElasticsearchOperations elasticClient;
 
@@ -61,8 +66,8 @@ public class ItemsRepository {
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder().withQuery(querySec);
 
         int pageInt = Integer.parseInt(page);
-        if (pageInt >= 0) {
-            queryBuilder.withPageable(PageRequest.of(pageInt, 10));
+        if (pageInt > 0) {
+            queryBuilder.withPageable(PageRequest.of(pageInt - 1, 10));
         }
 
         SearchHits<Items> result = elasticClient.search(queryBuilder.build(), Items.class);

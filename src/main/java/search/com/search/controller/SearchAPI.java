@@ -78,7 +78,7 @@ public class SearchAPI {
         @RequestParam(required = false) String category,
         @RequestParam(required = false) String manufacturer,
         @RequestParam(required = false) String product,
-        @RequestParam(required = false, defaultValue = "0") String page
+        @RequestParam(required = false, defaultValue = "1") String page
     ) {
 
         try {
