@@ -55,6 +55,7 @@ class Search implements InnerSearch {
             try {
                 this.repository.save(item);
             } catch (Exception e) {
+                log.error("addItem error", e);
                 throw new RuntimeException("Internal error");
             }
 
@@ -85,6 +86,7 @@ class Search implements InnerSearch {
                 this.repository.save(item);
 
             } catch (Exception e) {
+                log.error("updateItem", e);
                 throw new RuntimeException("Internal error");
             }
 
@@ -104,6 +106,7 @@ class Search implements InnerSearch {
                 this.repository.delete(item);
 
             } catch (Exception e) {
+                log.error("deleteItem error", e);
                 throw new RuntimeException("Internal error");
             }
 
