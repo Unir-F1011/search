@@ -26,7 +26,7 @@ public class Items {
 
     @Field(type = FieldType.Keyword, name = Consts.ID)
     @Id
-    private UUID id;
+    private String id;
 
     @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT)
     private String product;

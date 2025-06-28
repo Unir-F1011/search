@@ -45,7 +45,7 @@ class Search implements InnerSearch {
 
             Items item = Items.builder()
                     .category(itemDto.getCategory().trim())
-                    .id(itemDto.getId())
+                    .id(itemDto.getId().toString().trim())
                     .color(itemDto.getCategory().trim())
                     .manufacturer(itemDto.getManufacturer().trim())
                     .price(itemDto.getPrice())
@@ -75,7 +75,7 @@ class Search implements InnerSearch {
                 }
                 
                 Items item = Items.builder()
-                        .id(itemId)
+                        .id(itemId.toString().trim())
                         .total(itemCopy.get().getTotal() - itemDto.getTotal())
                         .price(itemCopy.get().getPrice())
                         .category(itemCopy.get().getCategory())
@@ -100,7 +100,7 @@ class Search implements InnerSearch {
     public void deleteItem(UUID itemId) {
         if (StringUtils.hasLength(itemId.toString().trim())) {
             Items item = Items.builder()
-                    .id(itemId)
+                    .id(itemId.toString().trim())
                     .build();
 
             try {
