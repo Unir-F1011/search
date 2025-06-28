@@ -1,7 +1,5 @@
 package search.com.search.model.dto;
 
-import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +14,7 @@ import lombok.ToString;
 @Builder
 @ToString
 public class ItemsDto {
-    private UUID id;
+    private String id;
     private String product;
     private String color;
     private String category;

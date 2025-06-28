@@ -18,9 +18,9 @@ public interface InnerSearch {
     
     void addItem(ItemsDto items);
 
-    void updateItem(ItemsDto items, UUID itemId);
+    void updateItem(ItemsDto items, String itemId);
 
-    void deleteItem(UUID itemId);
+    void deleteItem(String itemId);
 
     ResponseItems getItems(String category, String manufacturer, String product, String page);
 }
@@ -66,7 +66,7 @@ class Search implements InnerSearch {
     }
 
     @Override
-    public void updateItem(ItemsDto itemDto, UUID itemId) {
+    public void updateItem(ItemsDto itemDto, String itemId) {
         if (StringUtils.hasLength(itemId.toString().trim()) && itemDto.getTotal() != null) {
             try {
                 Optional<Items> itemCopy = this.repository.findById(itemId.toString());
@@ -75,7 +75,7 @@ class Search implements InnerSearch {
                 }
                 
                 Items item = Items.builder()
-                        .id(itemId.toString().trim())
+                        .id(itemId.trim())
                         .total(itemCopy.get().getTotal() - itemDto.getTotal())
                         .price(itemCopy.get().getPrice())
                         .category(itemCopy.get().getCategory())
@@ -97,10 +97,10 @@ class Search implements InnerSearch {
     }
 
     @Override
-    public void deleteItem(UUID itemId) {
+    public void deleteItem(String itemId) {
         if (StringUtils.hasLength(itemId.toString().trim())) {
             Items item = Items.builder()
-                    .id(itemId.toString().trim())
+                    .id(itemId.trim())
                     .build();
 
             try {

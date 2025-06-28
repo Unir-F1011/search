@@ -1,7 +1,6 @@
 package search.com.search.controller;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +43,7 @@ public class SearchAPI {
     }
 
     @DeleteMapping("/v1/items/{itemId}")
-    public ResponseEntity<Object> deleteItems(@PathVariable UUID itemId) {
+    public ResponseEntity<Object> deleteItems(@PathVariable String itemId) {
         try {
             this.search.deleteItem(itemId);
             HashMap<String, String> response = new HashMap<>();
@@ -59,7 +58,7 @@ public class SearchAPI {
     }
     
     @PatchMapping("/v1/items/{itemId}")
-    public ResponseEntity<Object> updateItems(@RequestBody ItemsDto itemDto, @PathVariable UUID itemId) {
+    public ResponseEntity<Object> updateItems(@RequestBody ItemsDto itemDto, @PathVariable String itemId) {
         try {
             this.search.updateItem(itemDto, itemId);
             HashMap<String, String> response = new HashMap<>();
