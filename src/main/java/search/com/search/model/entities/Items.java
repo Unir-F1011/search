@@ -1,5 +1,7 @@
 package search.com.search.model.entities;
 
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -24,7 +26,7 @@ public class Items {
 
     @Field(type = FieldType.Keyword, name = Consts.ID)
     @Id
-    private String id;
+    private UUID id;
 
     @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT)
     private String product;

@@ -1,6 +1,7 @@
 package search.com.search.service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,9 @@ public interface InnerSearch {
     
     void addItem(ItemsDto items);
 
-    void updateItem(ItemsDto items, String itemId);
+    void updateItem(ItemsDto items, UUID itemId);
 
-    void deleteItem(String itemId);
+    void deleteItem(UUID itemId);
 
     ResponseItems getItems(String category, String manufacturer, String product, String page);
 }
@@ -34,7 +35,7 @@ class Search implements InnerSearch {
 
     @Override
     public void addItem(ItemsDto itemDto) {
-        if (StringUtils.hasLength(itemDto.getId().trim()) &&
+        if (StringUtils.hasLength(itemDto.getId().toString().trim()) &&
                 StringUtils.hasLength(itemDto.getCategory().trim()) &&
                 StringUtils.hasLength(itemDto.getColor().trim()) &&
                 StringUtils.hasLength(itemDto.getManufacturer().trim()) &&
@@ -44,7 +45,7 @@ class Search implements InnerSearch {
 
             Items item = Items.builder()
                     .category(itemDto.getCategory().trim())
-                    .id(itemDto.getId().trim())
+                    .id(itemDto.getId())
                     .color(itemDto.getCategory().trim())
                     .manufacturer(itemDto.getManufacturer().trim())
                     .price(itemDto.getPrice())
@@ -65,16 +66,16 @@ class Search implements InnerSearch {
     }
 
     @Override
-    public void updateItem(ItemsDto itemDto, String itemId) {
-        if (StringUtils.hasLength(itemId.trim()) && itemDto.getTotal() != null) {
+    public void updateItem(ItemsDto itemDto, UUID itemId) {
+        if (StringUtils.hasLength(itemId.toString().trim()) && itemDto.getTotal() != null) {
             try {
-                Optional<Items> itemCopy = this.repository.findById(itemId.trim());
+                Optional<Items> itemCopy = this.repository.findById(itemId.toString());
                 if (itemCopy.isEmpty()) {
                     throw new IllegalArgumentException("Bad request");
                 }
                 
                 Items item = Items.builder()
-                        .id(itemId.trim())
+                        .id(itemId)
                         .total(itemCopy.get().getTotal() - itemDto.getTotal())
                         .price(itemCopy.get().getPrice())
                         .category(itemCopy.get().getCategory())
@@ -96,10 +97,10 @@ class Search implements InnerSearch {
     }
 
     @Override
-    public void deleteItem(String itemId) {
-        if (StringUtils.hasLength(itemId.trim())) {
+    public void deleteItem(UUID itemId) {
+        if (StringUtils.hasLength(itemId.toString().trim())) {
             Items item = Items.builder()
-                    .id(itemId.trim())
+                    .id(itemId)
                     .build();
 
             try {
