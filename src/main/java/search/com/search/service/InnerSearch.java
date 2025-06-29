@@ -46,7 +46,7 @@ class Search implements InnerSearch {
             Items item = Items.builder()
                     .category(itemDto.getCategory().trim())
                     .id(itemDto.getId().toString().trim())
-                    .color(itemDto.getCategory().trim())
+                    .color(itemDto.getColor().trim())
                     .manufacturer(itemDto.getManufacturer().trim())
                     .price(itemDto.getPrice())
                     .total(itemDto.getTotal())
