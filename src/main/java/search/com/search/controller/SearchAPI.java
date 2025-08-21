@@ -30,15 +30,28 @@ public class SearchAPI {
 
     @PostMapping("/v1/items")
     public ResponseEntity<Object> addItems(@RequestBody ItemsDto itemDto) {
+        log.info("Received POST request to create item: {}", itemDto);
         try {
+            log.info("Calling search.addItem...");
             this.search.addItem(itemDto);
+            log.info("Item added successfully, creating response");
             HashMap<String, String> response = new HashMap<>();
             response.put("message", "Item added successful!");
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
-        }catch (IllegalArgumentException i) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IllegalArgumentException i) {
+            log.error("IllegalArgumentException in addItems: {}", i.getMessage(), i);
+
+            HashMap<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Bad Request");
+            errorResponse.put("message", i.getMessage());
+            errorResponse.put("status", "400");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception e) {
+            HashMap<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Internal Server Error");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", "500");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
@@ -62,7 +75,7 @@ public class SearchAPI {
         try {
             this.search.updateItem(itemDto, itemId);
             HashMap<String, String> response = new HashMap<>();
-            response.put("message", "Item added successful!");
+            response.put("message", "Item updated successful!");
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         }catch (IllegalArgumentException i) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

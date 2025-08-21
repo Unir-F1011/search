@@ -24,14 +24,14 @@ import search.com.search.model.consts.Consts;
 @ToString
 public class Items {
 
-    @Field(type = FieldType.Keyword, name = Consts.ID)
     @Id
+    @Field(type = FieldType.Keyword, name = Consts.ID)
     private String id;
 
-    @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT)
+    @Field(type = FieldType.Search_As_You_Type, name = Consts.PRODUCT, analyzer = "standard")
     private String product;
 
-    @Field(type = FieldType.Text, name = Consts.COLOR)
+    @Field(type = FieldType.Text, name = Consts.COLOR, analyzer = "standard")
     private String color;
 
     @Field(type = FieldType.Keyword, name = Consts.CATEGORY)

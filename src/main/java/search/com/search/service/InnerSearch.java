@@ -35,17 +35,20 @@ class Search implements InnerSearch {
 
     @Override
     public void addItem(ItemsDto itemDto) {
-        if (StringUtils.hasLength(itemDto.getId().toString().trim()) &&
-                StringUtils.hasLength(itemDto.getCategory().trim()) &&
+        // QUITAMOS LA VALIDACIÓN DEL ID - esa línea causaba el NullPointerException
+        if (StringUtils.hasLength(itemDto.getCategory().trim()) &&
                 StringUtils.hasLength(itemDto.getColor().trim()) &&
                 StringUtils.hasLength(itemDto.getManufacturer().trim()) &&
                 StringUtils.hasLength(itemDto.getProduct().trim()) &&
                 itemDto.getPrice() != null &&
                 itemDto.getTotal() != null) {
 
+            // GENERAR ID AUTOMÁTICAMENTE
+            String generatedId = UUID.randomUUID().toString();
+
             Items item = Items.builder()
+                    .id(generatedId)  // ← Usar ID generado
                     .category(itemDto.getCategory().trim())
-                    .id(itemDto.getId().toString().trim())
                     .color(itemDto.getColor().trim())
                     .manufacturer(itemDto.getManufacturer().trim())
                     .price(itemDto.getPrice())
@@ -54,17 +57,19 @@ class Search implements InnerSearch {
                     .build();
 
             try {
+                log.info("Creating new item with ID: {}", generatedId);
                 this.repository.save(item);
+                log.info("Item created successfully");
             } catch (Exception e) {
                 log.error("addItem error", e);
                 throw new RuntimeException("Internal error");
             }
 
         } else {
+            log.warn("Invalid item data provided");
             throw new IllegalArgumentException("Bad request");
         }
     }
-
     @Override
     public void updateItem(ItemsDto itemDto, String itemId) {
         if (StringUtils.hasLength(itemId.toString().trim()) && itemDto.getTotal() != null) {
