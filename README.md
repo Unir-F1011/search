@@ -24,31 +24,42 @@ curl "localhost:8081/v1/search?q=iphne&fuzziness=1"  # 1 carácter de diferencia
 curl "localhost:8081/v1/search?q=iphne&fuzziness=AUTO"  # Automático
 ```
 
-#### Autocompletado no genera sugerencias
-1. **Verificar campo search_as_you_type**: Confirmar que el campo `product` tenga el tipo correcto
-2. **Longitud mínima del prefijo**: Intenta con al menos 2 caracteres
-3. **Comprobar límites**: Aumenta el parámetro `limit` para más resultados
+#### Facetas no generan sugerencias esperadas
+1. **Verificar datos existentes**: Confirmar que hay suficientes items para generar facetas
+2. **Revisar filtros aplicados**: Filtros muy restrictivos pueden reducir las facetas
+3. **Comprobar agregaciones**: Verificar que las agregaciones se ejecuten correctamente
 
 ```bash
-# Verificar mapping del campo product
-curl "localhost:9200/items/_mapping" | grep -A5 "product"
+# Verificar facetas sin filtros
+curl "localhost:8081/v1/facets"
 
-# Probar con diferentes longitudes
-curl "localhost:8081/v1/suggest?q=i"     # 1 carácter
-curl "localhost:8081/v1/suggest?q=iP"    # 2 caracteres
-curl "localhost:8081/v1/suggest?q=iPh"   # 3 caracteres
+# Comprobar datos por categoría
+curl "localhost:8081/v1/facets?category=Electronics"
+
+# Verificar que hay datos diversos
+curl "localhost:8081/v1/items"
 ```
 
-#### Búsqueda avanzada devuelve errores 400
-1. **Validar formato de precios**: Usar números válidos para minPrice/maxPrice
-2. **Verificar parámetros**: Confirmar que los nombres de categoría/fabricante existan
-3. **Revisar rangos de precio**: Asegurar que minPrice <= maxPrice
+#### Rangos de precio vacíos
+**Problema:** Los rangos de precio no muestran documentos
+
+**Solución:** Verificar que los productos tengan precios dentro de los rangos definidos:
+- 0-50, 50-100, 100-300, 300-500, 500-1000, 1000-2000, 2000+
 
 ```bash
-# Ejemplos de parámetros válidos
-curl "localhost:8081/v1/search/advanced?minPrice=100&maxPrice=1000"  # ✅ Correcto
-curl "localhost:8081/v1/search/advanced?minPrice=abc"                # ❌ Error: precio inválido
-curl "localhost:8081/v1/search/advanced?minPrice=1000&maxPrice=100"  # ❌ Error: rango inválido
+# Verificar distribución de precios
+curl "localhost:8081/v1/facets" | grep -A10 "priceStatistics"
+```
+
+#### Performance de agregaciones
+1. **Limitar agregaciones**: Los términos están limitados a 50 buckets
+2. **Usar filtros**: Aplicar filtros antes de agregar para mejorar performance
+3. **Cachear resultados**: Considerar caché para facetas frecuentes
+
+```bash
+# Facetas optimizadas con filtros
+curl "localhost:8081/v1/facets?category=Electronics"  # ✅ Más rápido
+curl "localhost:8081/v1/facets"                       # ⚠️ Más lento (sin filtros)
 ```
 
 #### Errores de query en campos keyword
@@ -342,6 +353,108 @@ GET /v1/items?category=Electronics&manufacturer=Apple&product=iPhone&page=1
 
 ### Búsquedas Avanzadas (Nuevos Endpoints)
 
+#### 🔥 Búsqueda Full-Text con Fuzzy
+```http
+GET /v1/search?q=iphne&fuzziness=AUTO&page=1
+```
+
+**Características:**
+- **Multi-match** en múltiples campos (product, color, category, manufacturer)
+- **Fuzzy matching** para corrección de errores tipográficos
+- **Pesos diferenciados** por relevancia de campo
+- **Tolerancia configurable** a errores
+
+**Parámetros:**
+- `q` (requerido) - Término de búsqueda
+- `fuzziness` (opcional) - Nivel de tolerancia: "AUTO", "0", "1", "2" (default: "AUTO")
+- `page` (opcional) - Número de página (default: 1)
+
+**Ejemplos:**
+```http
+# Búsqueda con error tipográfico
+GET /v1/search?q=iphne
+→ Encuentra "iPhone 15 Pro" a pesar del error
+
+# Búsqueda en múltiples campos
+GET /v1/search?q=apple
+→ Busca en producto, fabricante, categoría y color
+
+# Configurar tolerancia a errores
+GET /v1/search?q=samsyng&fuzziness=1
+→ Encuentra "Samsung" con tolerancia de 1 carácter
+```
+
+#### 🎯 Autocompletado / Sugerencias
+```http
+GET /v1/suggest?q=iP&limit=5
+```
+
+**Características:**
+- **Search-as-you-type** optimizado para prefijos
+- **Sugerencias de múltiples campos** (productos, fabricantes, categorías)
+- **Sugerencias únicas** sin duplicados
+- **Límite configurable** de resultados
+
+**Parámetros:**
+- `q` (requerido) - Prefijo para autocompletar
+- `limit` (opcional) - Máximo de sugerencias (default: 5, máx: 20)
+
+**Ejemplos:**
+```http
+# Autocompletado de productos
+GET /v1/suggest?q=iP
+→ ["iPhone 15 Pro", "iPad Air"]
+
+# Autocompletado de fabricantes
+GET /v1/suggest?q=App
+→ ["Apple"]
+
+# Autocompletado de categorías
+GET /v1/suggest?q=Elect
+→ ["Electronics"]
+
+# Limitar resultados
+GET /v1/suggest?q=a&limit=3
+→ Máximo 3 sugerencias
+```
+
+#### 🎯 Búsqueda Avanzada (Híbrida)
+```http
+GET /v1/search/advanced?q=phone&category=Electronics&manufacturer=Apple&minPrice=500&maxPrice=2000&page=1
+```
+
+**Características:**
+- **Combina** búsqueda full-text con filtros estructurados
+- **Rangos de precio** con operadores gte/lte
+- **Filtros exactos** por categoría y fabricante
+- **Búsqueda flexible** opcional por texto
+
+**Parámetros:**
+- `q` (opcional) - Término de búsqueda full-text con fuzzy
+- `category` (opcional) - Filtro exacto por categoría
+- `manufacturer` (opcional) - Filtro exacto por fabricante
+- `minPrice` (opcional) - Precio mínimo
+- `maxPrice` (opcional) - Precio máximo
+- `page` (opcional) - Número de página (default: 1)
+
+**Ejemplos:**
+```http
+# Solo filtros estructurados
+GET /v1/search/advanced?category=Electronics&minPrice=100&maxPrice=1000
+
+# Solo búsqueda de texto
+GET /v1/search/advanced?q=smartphone
+
+# Combinación completa
+GET /v1/search/advanced?q=apple&category=Electronics&manufacturer=Apple&minPrice=500&maxPrice=2000
+
+# Solo rango de precio
+GET /v1/search/advanced?minPrice=1000
+
+# Búsqueda por fabricante específico
+GET /v1/search/advanced?manufacturer=Samsung&maxPrice=1000
+```
+
 #### 🔥 Fuzzy Search - Corrección de Errores Tipográficos
 ```http
 # Error tipográfico en iPhone
@@ -407,69 +520,32 @@ GET /v1/search/advanced?q=smartphone&manufacturer=Samsung
 → Smartphones específicamente de Samsung
 ```
 
-#### 📊 Comparación de Resultados
+#### 🎯 Análisis de Facetas
 ```http
-# Búsqueda básica (exacta)
-GET /v1/items?product=iPhone
-→ Solo productos que contengan exactamente "iPhone"
+# Facetas generales - Dashboard completo
+GET /v1/facets
+→ Análisis completo: categorías, fabricantes, rangos de precio
 
-# Búsqueda fuzzy (tolerante)  
-GET /v1/search?q=iPhone
-→ Productos iPhone + productos similares + tolerancia a errores
+# Facetas contextuales por fabricante
+GET /v1/facets?manufacturer=Apple
+→ Categorías y distribución de precios solo para Apple
 
-# Búsqueda avanzada (combinada)
-GET /v1/search/advanced?q=iPhone&manufacturer=Apple&minPrice=500
-→ iPhones de Apple sobre $500 + búsqueda fuzzy
+# Análisis por categoría
+GET /v1/facets?category=Gaming
+→ Fabricantes y precios en la categoría Gaming
+
+# Facetas con búsqueda textual
+GET /v1/facets?q=smartphone
+→ Agregaciones para productos relacionados con smartphones
+
+# Análisis combinado
+GET /v1/facets?q=pro&manufacturer=Apple
+→ Productos "Pro" de Apple con distribución de categorías
+
+# Facetas cruzadas
+GET /v1/facets?category=Electronics&manufacturer=Samsung
+→ Análisis de productos Samsung en Electronics
 ```
-
-## Configuración
-
-### Variables de Entorno
-```properties
-# Elasticsearch
-elasticsearch.host=your-elasticsearch-host
-elasticsearch.credentials.user=your-username
-elasticsearch.credentials.password=your-password
-
-# Logging
-logging.level.search.com.search=INFO
-```
-
-### Docker Compose
-```yaml
-ms-search:
-  image: your-search-service
-  ports:
-    - "8081:8081"
-  environment:
-    - elasticsearch.host=elasticsearch-host
-    - elasticsearch.credentials.user=elastic
-    - elasticsearch.credentials.password=changeme
-```
-
-## Estructura del Proyecto
-
-```
-src/
-├── main/java/search/com/search/
-│   ├── config/
-│   │   └── ElasticsearchConfig.java     # Configuración de ES
-│   ├── controller/
-│   │   └── SearchAPI.java               # Endpoints REST
-│   ├── model/
-│   │   ├── entities/
-│   │   │   └── Items.java               # Entidad con mapping
-│   │   ├── dto/
-│   │   │   ├── ItemsDto.java           # DTO para requests
-│   │   │   └── ResponseItems.java       # DTO para responses
-│   │   └── consts/
-│   │       └── Consts.java             # Constantes de campos
-│   ├── repository/
-│   │   └── ItemsRepository.java        # Repositorio de ES
-│   └── service/
-│       └── InnerSearch.java            # Lógica de negocio
-```
-
 ## Inicialización Automática
 
 El índice de Elasticsearch se crea automáticamente al iniciar la aplicación:
@@ -502,52 +578,33 @@ Combina lo mejor de ambos mundos:
 - **Rangos numéricos** para precios
 - **Paginación** en todos los tipos de búsqueda
 
-### 📊 Arquitectura de Consultas
+### 🎯 Agregaciones y Análisis
+Sistema de facetas que aprovecha las capacidades analíticas de Elasticsearch:
+- **Agregaciones por términos** para categorías y fabricantes
+- **Rangos de precio dinámicos** con distribución porcentual
+- **Estadísticas numéricas** completas (min, max, avg, sum, count)
+- **Facetas contextuales** que se adaptan a filtros de búsqueda
 
-#### Endpoint `/v1/search` (Fuzzy)
-```
-BoolQuery {
-  must: MultiMatchQuery {
-    fields: ["product^2.0", "color^1.0", "category^1.5", "manufacturer^1.5"]
-    type: BEST_FIELDS
-    fuzziness: AUTO|0|1|2
-    prefixLength: 1
-    maxExpansions: 50
-  }
-}
-```
+### 📊 Arquitectura de Agregaciones
 
-#### Endpoint `/v1/suggest` (Autocompletado)
-```
-BoolQuery {
-  should: [
-    MultiMatchQuery {
-      fields: ["product", "product._2gram", "product._3gram", "product.prefix"]
-      type: BOOL_PREFIX
-    },
-    PrefixQuery { field: "manufacturer" },
-    PrefixQuery { field: "category" },
-    MultiMatchQuery {
-      fields: ["color"]
-      type: PHRASE_PREFIX
-    }
-  ]
-}
-```
-
-#### Endpoint `/v1/search/advanced` (Híbrida)
+#### Endpoint `/v1/facets` (Agregaciones)
 ```
 BoolQuery {
   must: MultiMatchQuery { /* si q está presente */ }
   filter: [
     TermQuery { field: "category" },     /* si category está presente */
-    TermQuery { field: "manufacturer" }, /* si manufacturer está presente */
-    RangeQuery { 
-      field: "price" 
-      gte: minPrice,
-      lte: maxPrice
-    }  /* si precios están presentes */
+    TermQuery { field: "manufacturer" }  /* si manufacturer está presente */
   ]
+}
+
+Aggregations: {
+  categories: TermsAggregation { field: "category", size: 50 }
+  manufacturers: TermsAggregation { field: "manufacturer", size: 50 }
+  price_ranges: RangeAggregation { 
+    field: "price",
+    ranges: ["0-50", "50-100", "100-300", "300-500", "500-1000", "1000-2000", "2000+"]
+  }
+  price_stats: StatsAggregation { field: "price" }
 }
 ```
 
@@ -575,7 +632,6 @@ Para facilitar las pruebas de las nuevas funcionalidades, puedes importar esta c
 #### Configuración de Variables
 Configura estas variables en Postman:
 - `base_url`: `http://localhost:8081`
-- `elasticsearch_url`: `http://localhost:9200`
 
 
 #### Pruebas Destacadas:
@@ -590,6 +646,7 @@ Configura estas variables en Postman:
 
 🎯 **Búsqueda Híbrida:**
 - `GET /v1/search/advanced?q=phone&category=Electronics&minPrice=500&maxPrice=1500`
+
 
 ### Pruebas de Integración
 - Tests automáticos que validan el mapping de Elasticsearch
