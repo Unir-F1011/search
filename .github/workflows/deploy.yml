@@ -2,7 +2,10 @@ name: Build & Deploy Search
 
 on:
   push:
-    branches: ["main","developer","dev-miguel"]
+    branches:
+      - main
+      - developer
+      - dev-miguel
   workflow_dispatch:
 
 env:
@@ -13,6 +16,7 @@ env:
 
 jobs:
   build-push-deploy:
+    if: startsWith(github.event.head_commit.message, 'Merge')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
