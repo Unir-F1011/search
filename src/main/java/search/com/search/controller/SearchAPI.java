@@ -1,26 +1,23 @@
 package search.com.search.controller;
 
 import java.util.HashMap;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import search.com.search.model.dto.FacetsResponse;
 import search.com.search.model.dto.ItemsDto;
 import search.com.search.service.InnerSearch;
 import search.com.search.model.dto.ResponseItems;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 @Slf4j
 public class SearchAPI {
@@ -240,6 +237,43 @@ public class SearchAPI {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
             log.error("Error during advanced search", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    /**
+     * Endpoint de facetas/agregaciones para filtros dinámicos
+     * Devuelve agregaciones por categoría, fabricante y rangos de precio
+     *
+     * @param q Filtro opcional de texto para generar facetas contextuales
+     * @param category Filtro opcional por categoría para facetas cruzadas
+     * @param manufacturer Filtro opcional por fabricante para facetas cruzadas
+     * @return FacetsResponse con todas las agregaciones y estadísticas
+     */
+    @GetMapping("/v1/facets")
+    public ResponseEntity<FacetsResponse> getFacets(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String manufacturer) {
+
+        try {
+            log.info("Facets request: q='{}', category='{}', manufacturer='{}'", q, category, manufacturer);
+
+            FacetsResponse response = this.search.getFacets(q, category, manufacturer);
+
+            log.info("Facets response generated: {} total documents, {} categories, {} manufacturers, {} price ranges",
+                    response.getTotalDocuments(),
+                    response.getCategories().size(),
+                    response.getManufacturers().size(),
+                    response.getPriceRanges().size());
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid facets parameters: q='{}', category='{}', manufacturer='{}'", q, category, manufacturer, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            log.error("Error getting facets: q='{}', category='{}', manufacturer='{}'", q, category, manufacturer, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
