@@ -2,7 +2,7 @@ name: Build & Deploy Search
 
 on:
   push:
-    branches: ["main", "dev-miguel"]
+    branches: ["main","developer","dev-miguel"]
   workflow_dispatch:
 
 env:
