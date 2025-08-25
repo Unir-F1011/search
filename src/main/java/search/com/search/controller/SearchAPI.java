@@ -17,7 +17,8 @@ import search.com.search.service.InnerSearch;
 import search.com.search.model.dto.ResponseItems;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+// Global CORS is now configured via CorsConfig (see search.com.search.config.CorsConfig).
+// Remove/avoid @CrossOrigin here to keep a single source of truth.
 @RequiredArgsConstructor
 @Slf4j
 public class SearchAPI {
