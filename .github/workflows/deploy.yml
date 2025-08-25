@@ -15,6 +15,7 @@ env:
 
 jobs:
   build-push-deploy:
+    if: startsWith(github.event.head_commit.message, 'Merge')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
