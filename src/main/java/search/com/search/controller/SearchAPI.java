@@ -17,7 +17,7 @@ import search.com.search.service.InnerSearch;
 import search.com.search.model.dto.ResponseItems;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5050")
 @RequiredArgsConstructor
 @Slf4j
 public class SearchAPI {
