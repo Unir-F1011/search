@@ -2,10 +2,9 @@ name: Build & Deploy Search
 
 on:
   push:
-    branches:
-      - main
-      - developer
-      - dev-miguel
+    branches: ["master", "developer", "dev-miguel"]
+  pull_request:
+    branches: ["master", "developer", "dev-miguel"]
   workflow_dispatch:
 
 env:

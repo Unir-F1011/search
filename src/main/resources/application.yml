@@ -1,17 +1,19 @@
 spring:
   application:
-    name: ${SERVER_NAME}
+    name: ${SERVER_NAME:ms-search}
 
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8081}
 
 eureka:
   client:
+    registerWithEureka: true
+    fetchRegistry: true
     serviceUrl:
-      defaultZone: ${EUREKA_URL}
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
   instance:
     preferIpAddress: false
-    hostname: ${SERVER_NAME}
+    hostname: ${SERVER_NAME:ms-search}
 
 elasticsearch:
   host: ${ELASTICSEARCH_HOST}
@@ -24,6 +26,12 @@ logging:
 
 springdoc:
   api-docs:
-    enabled: true 
-  swagger-ui: 
     enabled: true
+  swagger-ui:
+    enabled: true
+
+# Custom application properties
+app:
+  cors:
+    # Comma separated list of allowed origins for CORS (set via APP_CORS_ALLOWED_ORIGINS env var in prod)
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
