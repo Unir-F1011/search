@@ -29,3 +29,9 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+# Custom application properties
+app:
+  cors:
+    # Comma separated list of allowed origins for CORS (set via APP_CORS_ALLOWED_ORIGINS env var in prod)
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
